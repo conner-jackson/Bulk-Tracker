@@ -1,5 +1,5 @@
 // Bump CACHE version whenever the app files change to force an update.
-const CACHE = 'bulk-tracker-v1';
+const CACHE = 'macroflow-v3';
 const ASSETS = [
   './',
   './index.html',
