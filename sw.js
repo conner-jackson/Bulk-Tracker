@@ -1,5 +1,5 @@
 // Bump CACHE version whenever the app files change to force an update.
-const CACHE = 'macroflow-v9';
+const CACHE = 'macroflow-v10';
 const ASSETS = [
   './',
   './index.html',
