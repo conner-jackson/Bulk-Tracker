@@ -16,7 +16,7 @@
 :root{color-scheme:dark;
 --bar:#000000;--bg:#0b0b0d;--card:#151518;
 --ink:#f4f5f7;--muted:#9aa1ab;--line:#2a2b31;
---gold:#f5a623;--teal:#2bb6a8;--green:#4caf50;--coral:#ff6f59;--carb:#f5a623;
+--gold:#f5a623;--teal:#2bb6a8;--green:#4caf50;--coral:#ff6f59;--carb:#f5a623;--water:#2bb6f0;
 --shadow:0 1px 2px rgba(0,0,0,.5),0 6px 20px rgba(0,0,0,.45);}
 *{box-sizing:border-box}
 html,body{margin:0}
@@ -25,7 +25,7 @@ body{background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSys
 padding:calc(env(safe-area-inset-top) + 10px) 16px 10px;display:flex;align-items:center;gap:12px;
 border-bottom:1px solid #17181c}
 .logo{height:88px;width:auto;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
-.logo img{height:100%;width:auto;display:block}
+.logo img,.logo svg{height:100%;width:auto;display:block}
 .appbar .t{font-size:20px;font-weight:800;letter-spacing:.02em}
 .appbar .sub{font-size:11.5px;color:#7f8792;margin-top:2px}
 .wrap{max-width:820px;margin:0 auto;padding:16px 14px 70px}
@@ -57,8 +57,12 @@ h2{font-size:13px;margin:0;text-transform:uppercase;letter-spacing:.06em;color:v
 .chips{margin-top:12px;display:flex;flex-wrap:wrap;gap:6px}
 .chip{font-size:11.5px;padding:3px 9px;border-radius:20px;background:#24252b;color:var(--muted);font-weight:600}
 .coach{font-size:13px;color:var(--ink);background:#1c1a12;border:1px solid #4a3b16;border-radius:9px;padding:10px 12px;margin-top:14px}
+.pace{margin-top:12px;font-size:13px;border-radius:9px;padding:10px 12px;border:1px solid var(--line);background:#101319}
+.pace .ph{font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-size:10.5px;margin-bottom:5px}
+.pace b{color:var(--ink)}
+.pace .ok{color:#5bd07f;font-weight:700}.pace .bad{color:#ffb060;font-weight:700}
 input,select,button{font-family:inherit;font-size:14px}
-input[type=text],input[type=number],input[type=date],select{width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:9px;background:#1c1d22;color:var(--ink)}
+input[type=text],input[type=number],input[type=date],input[type=time],select{width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:9px;background:#1c1d22;color:var(--ink)}
 input:focus,select:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 3px rgba(43,182,168,.18)}
 label{font-size:11.5px;color:var(--muted);display:block;margin:0 0 4px;font-weight:600}
 .field{margin-bottom:10px}
@@ -83,16 +87,19 @@ button{cursor:pointer;border:none;border-radius:9px;padding:9px 15px;font-weight
 .dropdown div{padding:10px 12px;cursor:pointer;font-size:13.5px;display:flex;justify-content:space-between;gap:8px}
 .dropdown div:hover{background:#24252b}
 .dropdown .m{color:var(--muted);font-size:12px;white-space:nowrap}
+.dropdown .star{color:var(--gold)}
 .tabs{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
 .tabs button{background:#24252b;color:var(--muted);padding:6px 12px;font-size:12.5px;border-radius:20px}
 .tabs button.on{background:var(--gold);color:#1a1a1a}
 .mealgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:11px}
-.meal{border:1px solid var(--line);border-radius:11px;padding:12px;background:#1b1c20}
-.meal .t{font-weight:700;font-size:14px}
+.meal{border:1px solid var(--line);border-radius:11px;padding:12px;background:#1b1c20;position:relative}
+.meal .t{font-weight:700;font-size:14px;padding-right:16px}
 .meal .m{font-size:12.5px;color:var(--muted);margin:6px 0 9px;font-variant-numeric:tabular-nums}
 .meal .add{font-size:12px;padding:5px 11px}
+.meal .del{position:absolute;top:8px;right:10px;color:var(--muted);cursor:pointer;font-size:17px;line-height:1}
+.meal .del:hover{color:var(--coral)}
 .tag{display:inline-block;font-size:10px;padding:2px 7px;border-radius:20px;font-weight:700;margin-right:5px;text-transform:uppercase;letter-spacing:.03em}
-.tag.easy{background:#12251a;color:#5bd07f}.tag.mid{background:#2a2113;color:#f0b74a}.tag.hi{background:#2a1512;color:#ff8f79}
+.tag.easy{background:#12251a;color:#5bd07f}.tag.mid{background:#2a2113;color:#f0b74a}.tag.hi{background:#2a1512;color:#ff8f79}.tag.mine{background:#2a2113;color:#f5a623}
 .small-muted{font-size:12px;color:var(--muted)}
 .pill{display:inline-block;font-size:12px;padding:3px 10px;border-radius:7px;font-weight:700;font-variant-numeric:tabular-nums}
 .pill.cal{background:#2a2113;color:#f5a623}
@@ -103,6 +110,18 @@ button{cursor:pointer;border:none;border-radius:9px;padding:9px 15px;font-weight
 .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
 .chartbox{height:200px}
 .notice{font-size:12.5px;color:var(--muted);background:#1c1d22;border-radius:9px;padding:9px 11px;margin-top:8px}
+.saverow{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:13px;color:var(--muted)}
+.saverow input{width:auto}
+.wtop{display:flex;align-items:baseline;gap:8px;justify-content:center;margin-bottom:9px}
+.wbig{font-size:28px;font-weight:800;font-variant-numeric:tabular-nums}
+.wu{font-size:13px;color:var(--muted);font-weight:600}
+.wgoal{color:var(--muted);font-size:13px;font-variant-numeric:tabular-nums}
+.wtrack{height:15px;border-radius:8px;background:#0f1c26;overflow:hidden;border:1px solid #1c2a36}
+.wfill{height:100%;background:linear-gradient(90deg,#2bb6f0,#2f7cf6);border-radius:8px;transition:width .35s}
+.qrow{display:flex;gap:7px;flex-wrap:wrap;margin-top:11px}
+.qbtn{background:#0f2530;color:#5fd0e6;border:1px solid #1e3a46;padding:8px 13px;border-radius:9px;font-weight:700;font-size:13.5px}
+.qbtn:hover{filter:brightness(1.12)}
+.qbtn.sub{background:#241416;color:#ff9f8f;border-color:#3a2420}
 .foot{text-align:center;color:var(--muted);font-size:11.5px;margin-top:4px}
 @media(max-width:520px){.grid3{grid-template-columns:1fr 1fr}.calwrap{flex-direction:column}.calnums{width:100%}}
 </style>
@@ -129,7 +148,13 @@ button{cursor:pointer;border:none;border-radius:9px;padding:9px 15px;font-weight
       <div class="calnums" id="calNums"></div>
     </div>
     <div class="macros" id="microBars"></div>
+    <div class="pace" id="pace"></div>
     <div class="coach" id="coach"></div>
+  </div>
+
+  <div class="card">
+    <div class="cardhead"><h2>Water</h2><span class="small-muted">Goal ~1 gallon on training days</span></div>
+    <div id="waterWrap"></div>
   </div>
 
   <div class="card">
@@ -151,6 +176,7 @@ button{cursor:pointer;border:none;border-radius:9px;padding:9px 15px;font-weight
         <div><label>Protein (g)</label><input type="number" id="cPro" min="0"></div>
         <div><label>Fiber (g) &middot; optional</label><input type="number" id="cFib" min="0"></div>
       </div>
+      <div class="saverow"><input type="checkbox" id="saveFood"><label for="saveFood" style="margin:0">Save to My Foods for quick logging later</label></div>
     </div>
     <div id="logList" style="margin-top:12px"></div>
   </div>
@@ -202,7 +228,17 @@ button{cursor:pointer;border:none;border-radius:9px;padding:9px 15px;font-weight
             <option value="0.9">0.9 &times; bodyweight</option>
             <option value="1.0">1.0 &times; bodyweight</option>
           </select></div>
-        <div class="field" style="display:flex;align-items:flex-end"><button class="btn teal" onclick="saveProf()">Save targets</button></div>
+        <div class="field"><label>Water goal (oz)</label><input type="number" id="pWater" step="5"></div>
+      </div>
+      <label style="margin-top:4px">Meal schedule (sets your pace targets)</label>
+      <div class="grid3">
+        <div class="field"><label>Breakfast by</label><input type="time" id="pBfast"></div>
+        <div class="field"><label>Lunch by</label><input type="time" id="pLunch"></div>
+        <div class="field"><label>Dinner by</label><input type="time" id="pDinner"></div>
+      </div>
+      <div class="grid2">
+        <div class="field"><label>Day ends (bedtime)</label><input type="time" id="pBed"></div>
+        <div class="field" style="display:flex;align-items:flex-end"><button class="btn teal" onclick="saveProf()">Save</button></div>
       </div>
     </div>
   </div>
@@ -213,15 +249,19 @@ button{cursor:pointer;border:none;border-radius:9px;padding:9px 15px;font-weight
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js"></script>
 <script>
 const LS=window.localStorage;
-const K={prof:'ft_prof',log:'ft_log',w:'ft_w'};
+const K={prof:'ft_prof',log:'ft_log',w:'ft_w',water:'ft_water',myfoods:'ft_myfoods'};
 const load=(k,d)=>{try{return JSON.parse(LS.getItem(k))??d}catch(e){return d}};
 const save=(k,v)=>LS.setItem(k,JSON.stringify(v));
 const todayStr=()=>new Date().toISOString().slice(0,10);
 let curDay=todayStr();
 
-let prof=load(K.prof,{w:188,g:200,h:74.75,age:22,act:1.55,surp:350,proR:0.9});
+const PROF_DEFAULTS={w:188,g:200,h:74.75,age:22,act:1.55,surp:350,proR:0.9,
+  waterGoal:130,bfast:'09:00',lunch:'13:30',dinner:'19:30',bed:'22:30'};
+let prof=Object.assign({},PROF_DEFAULTS,load(K.prof,{}));
 let logs=load(K.log,{});
 let weights=load(K.w,[]);
+let water=load(K.water,{});
+let myfoods=load(K.myfoods,[]);
 
 function targets(){
   const kg=prof.w*0.4536, cm=prof.h*2.54;
@@ -292,6 +332,59 @@ function macroBar(nm,val,goal,unit,color){
     <span class="mval">${Math.round(val)} / ${goal} ${unit}${over?' &check;':''}</span></div>
     <div class="mtrack"><div class="mfill" style="width:${pct}%;background:${over?'var(--green)':color}"></div></div></div>`;
 }
+
+// ---- pacing ----
+function toMin(hhmm){const p=(hhmm||'0:0').split(':');return (+p[0])*60+(+p[1]||0);}
+function paceCheckpoints(){
+  return [
+    {m:toMin('07:00'),cal:0,pro:0},
+    {m:toMin(prof.bfast),cal:.25,pro:.25},
+    {m:toMin(prof.lunch),cal:.55,pro:.50},
+    {m:toMin(prof.dinner),cal:.85,pro:.75},
+    {m:toMin(prof.bed),cal:1,pro:1}
+  ].sort((a,b)=>a.m-b.m);
+}
+function expectedFrac(){
+  const now=new Date(), cur=now.getHours()*60+now.getMinutes(), pts=paceCheckpoints();
+  if(cur<=pts[0].m)return{cal:0,pro:0};
+  if(cur>=pts[pts.length-1].m)return{cal:1,pro:1};
+  for(let i=0;i<pts.length-1;i++){
+    if(cur>=pts[i].m&&cur<=pts[i+1].m){
+      const r=(cur-pts[i].m)/((pts[i+1].m-pts[i].m)||1);
+      return{cal:pts[i].cal+(pts[i+1].cal-pts[i].cal)*r,pro:pts[i].pro+(pts[i+1].pro-pts[i].pro)*r};
+    }
+  }
+  return{cal:1,pro:1};
+}
+function renderPace(){
+  const el=document.getElementById('pace');
+  if(curDay!==todayStr()){el.style.display='none';return;}
+  el.style.display='';
+  const t=targets(), s=sumDay(), f=expectedFrac();
+  const eCal=Math.round(t.cal*f.cal), ePro=Math.round(t.pro*f.pro);
+  const dCal=Math.round(s.cal-eCal), dPro=Math.round(s.pro-ePro);
+  const now=new Date().toLocaleTimeString([], {hour:'numeric',minute:'2-digit'});
+  const cCls=dCal>=-60?'ok':'bad', pCls=dPro>=-8?'ok':'bad';
+  const cTxt=dCal>=0?`${dCal} ahead`:`${Math.abs(dCal)} behind`;
+  const pTxt=dPro>=0?`${dPro}g ahead`:`${Math.abs(dPro)}g behind`;
+  el.innerHTML=`<div class="ph">On-pace target &middot; ${now}</div>
+    By now aim for <b>${eCal} cal</b> &amp; <b>${ePro}g protein</b>.
+    You're <span class="${cCls}">${cTxt}</span> on calories, <span class="${pCls}">${pTxt}</span> on protein.`;
+}
+
+// ---- water ----
+function todayWater(){return water[curDay]||0}
+function addWater(oz){water[curDay]=Math.max(0,Math.round((water[curDay]||0)+oz));save(K.water,water);renderWater();}
+function renderWater(){
+  const g=+prof.waterGoal||130, v=todayWater(), pct=Math.min(v/g*100,100);
+  const done=v>=g;
+  document.getElementById('waterWrap').innerHTML=
+    `<div class="wtop"><span class="wbig">${v}</span><span class="wu">oz</span><span class="wgoal">/ ${g} oz${done?' &check;':''}</span></div>
+     <div class="wtrack"><div class="wfill" style="width:${pct}%"></div></div>
+     <div class="qrow">${[8,12,16,24].map(o=>`<button class="qbtn" onclick="addWater(${o})">+${o}</button>`).join('')}
+       <button class="qbtn sub" onclick="addWater(-8)">&minus;8</button></div>`;
+}
+
 function renderToday(){
   const t=targets(), s=sumDay();
   gauge(document.getElementById('ringCal'),s.cal,t.cal);
@@ -314,6 +407,7 @@ function renderToday(){
   else if(calLeft>0){msg=`Protein hit! Still <b>${Math.round(calLeft)} cal</b> under &mdash; add calorie-dense stuff (PB, nuts, granola, whole milk).`;}
   else {msg=`Targets met for today. Nice work. &#9989;`;}
   document.getElementById('coach').innerHTML=msg;
+  renderPace();
   renderLog();
 }
 function renderLog(){
@@ -331,13 +425,23 @@ function renderProf(){
      <div class="col"><span class="pill pro">${t.pro}g protein</span></div>
      <div class="col"><span class="pill fat">${t.fatG}g fat</span></div>
      <div class="col"><span class="pill carb">${t.carbG}g carbs</span></div></div>
-     <div class="small-muted" style="margin-top:9px">${prof.w} lb &rarr; goal ${prof.g} lb &middot; maintenance ~${t.tdee} cal &middot; ${(+prof.surp)>0?'+':''}${prof.surp} surplus &middot; protein ${prof.proR}&times;bw</div>`;
+     <div class="small-muted" style="margin-top:9px">${prof.w} lb &rarr; goal ${prof.g} lb &middot; maintenance ~${t.tdee} cal &middot; ${(+prof.surp)>0?'+':''}${prof.surp} surplus &middot; protein ${prof.proR}&times;bw &middot; water ${prof.waterGoal}oz</div>`;
 }
 function renderMeals(cat){
+  const list0=['All','My foods',...CATS];
   const tabs=document.getElementById('mealTabs');
-  tabs.innerHTML=['All',...CATS].map(c=>`<button class="${(cat||'All')===c?'on':''}" onclick="renderMeals('${c.replace(/'/g,"")}')">${c}</button>`).join('');
+  tabs.innerHTML=list0.map(c=>`<button class="${(cat||'All')===c?'on':''}" onclick="renderMeals('${c.replace(/'/g,"")}')">${c}${c==='My foods'?` (${myfoods.length})`:''}</button>`).join('');
+  const grid=document.getElementById('mealGrid');
+  if(cat==='My foods'){
+    if(!myfoods.length){grid.innerHTML='<div class="small-muted">No saved foods yet. Add a custom food and tick &ldquo;Save to My Foods.&rdquo;</div>';return;}
+    grid.innerHTML=myfoods.map((m,idx)=>`<div class="meal"><span class="del" onclick="delMyFood(${idx})">&times;</span>
+      <div class="t">${m.n}</div>
+      <div class="m">${m.cal} cal &middot; ${m.pro}g protein${m.fib?` &middot; ${m.fib}g fiber`:''}</div>
+      <div><span class="tag mine">saved</span><button class="btn add" onclick='quickAdd(${JSON.stringify(m).replace(/'/g,"&#39;")})'>+ Log</button></div></div>`).join('');
+    return;
+  }
   const list=(!cat||cat==='All')?LIB:LIB.filter(x=>x.cat===cat);
-  document.getElementById('mealGrid').innerHTML=list.map(m=>{
+  grid.innerHTML=list.map(m=>{
     const ef=m.effort==='easy'?'<span class="tag easy">easy</span>':m.effort==='mid'?'<span class="tag mid">quick cook</span>':'<span class="tag hi">effort</span>';
     return `<div class="meal"><div class="t">${m.n}</div>
       <div class="m">${m.cal} cal &middot; ${m.pro}g protein${m.fib?` &middot; ${m.fib}g fiber`:''}${m.note?` &middot; ${m.note}`:''}</div>
@@ -366,15 +470,16 @@ function renderWeight(){
 }
 
 let searchMatch=null;
+function foodPool(){return myfoods.map(x=>Object.assign({},x,{mine:true})).concat(LIB);}
 function onSearch(q){
   const dd=document.getElementById('ddList'); q=q.trim().toLowerCase();
   document.getElementById('customRow').style.display='none';
   if(!q){dd.style.display='none';searchMatch=null;return;}
-  const res=LIB.filter(x=>x.n.toLowerCase().includes(q)).slice(0,8);
+  const res=foodPool().filter(x=>x.n.toLowerCase().includes(q)).slice(0,8);
   searchMatch=res.length?res[0]:null;
   if(!res.length){dd.style.display='none';document.getElementById('customRow').style.display='block';return;}
   dd.innerHTML=res.map(x=>`<div onclick='chooseFood(${JSON.stringify(x).replace(/'/g,"&#39;")})'>
-    <span>${x.n}</span><span class="m">${x.cal} cal &middot; ${x.pro}g P</span></div>`).join('');
+    <span>${x.mine?'<span class="star">&#9733;</span> ':''}${x.n}</span><span class="m">${x.cal} cal &middot; ${x.pro}g P</span></div>`).join('');
   dd.style.display='block';
 }
 function chooseFood(x){document.getElementById('foodSearch').value=x.n;searchMatch=x;
@@ -386,10 +491,13 @@ function addTyped(){
   else if(name){
     const cal=+document.getElementById('cCal').value||0, pro=+document.getElementById('cPro').value||0, fib=+document.getElementById('cFib').value||0;
     if(!cal&&!pro){alert('Enter calories/protein for the custom item.');return;}
-    pushItem({n:name,cal,pro,fib},q);
+    const item={n:name,cal,pro,fib};
+    if(document.getElementById('saveFood').checked){addMyFood(item);}
+    pushItem(item,q);
   } else {return;}
   document.getElementById('foodSearch').value='';document.getElementById('servQty').value=1;
   document.getElementById('cCal').value='';document.getElementById('cPro').value='';document.getElementById('cFib').value='';
+  document.getElementById('saveFood').checked=false;
   document.getElementById('customRow').style.display='none';searchMatch=null;
 }
 function quickAdd(m){pushItem(m,1);}
@@ -399,6 +507,12 @@ function pushItem(base,q){
   save(K.log,logs);renderToday();
 }
 function delItem(i){logs[curDay].splice(i,1);save(K.log,logs);renderToday();}
+function addMyFood(item){
+  if(myfoods.some(f=>f.n.toLowerCase()===item.n.toLowerCase()))return;
+  myfoods.push({n:item.n,cal:item.cal,pro:item.pro,fib:item.fib||0});
+  save(K.myfoods,myfoods);
+}
+function delMyFood(i){myfoods.splice(i,1);save(K.myfoods,myfoods);renderMeals('My foods');}
 function logWeight(){
   const v=+document.getElementById('wIn').value;if(!v){return;}
   weights=weights.filter(x=>x.d!==curDay);weights.push({d:curDay,lb:v});
@@ -406,20 +520,22 @@ function logWeight(){
   prof.w=v;save(K.prof,prof);renderProf();renderWeight();renderToday();
 }
 function shiftDay(n){const d=new Date(curDay);d.setDate(d.getDate()+n);curDay=d.toISOString().slice(0,10);
-  document.getElementById('dayPick').value=curDay;renderToday();}
-function pickDay(v){curDay=v;renderToday();}
+  document.getElementById('dayPick').value=curDay;renderToday();renderWater();}
+function pickDay(v){curDay=v;renderToday();renderWater();}
 function toggleProf(){const f=document.getElementById('profForm');
   const show=f.style.display==='none';f.style.display=show?'block':'none';
-  if(show){pW.value=prof.w;pG.value=prof.g;pH.value=prof.h;pAge.value=prof.age;pAct.value=prof.act;pSurp.value=prof.surp;pProR.value=prof.proR;}}
+  if(show){pW.value=prof.w;pG.value=prof.g;pH.value=prof.h;pAge.value=prof.age;pAct.value=prof.act;pSurp.value=prof.surp;pProR.value=prof.proR;
+    pWater.value=prof.waterGoal;pBfast.value=prof.bfast;pLunch.value=prof.lunch;pDinner.value=prof.dinner;pBed.value=prof.bed;}}
 function saveProf(){
-  prof={w:+pW.value,g:+pG.value,h:+pH.value,age:+pAge.value,act:+pAct.value,surp:+pSurp.value,proR:+pProR.value};
+  prof=Object.assign({},prof,{w:+pW.value,g:+pG.value,h:+pH.value,age:+pAge.value,act:+pAct.value,surp:+pSurp.value,proR:+pProR.value,
+    waterGoal:+pWater.value||130,bfast:pBfast.value||'09:00',lunch:pLunch.value||'13:30',dinner:pDinner.value||'19:30',bed:pBed.value||'22:30'});
   save(K.prof,prof);document.getElementById('profForm').style.display='none';
-  renderProf();renderToday();renderWeight();
+  renderProf();renderToday();renderWeight();renderWater();
 }
 document.addEventListener('click',e=>{if(!e.target.closest('.suggest'))document.getElementById('ddList').style.display='none';});
 
 document.getElementById('dayPick').value=curDay;
-renderProf();renderToday();renderMeals('All');renderWeight();
+renderProf();renderToday();renderWater();renderMeals('All');renderWeight();
 
 if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(()=>{});});}
 </script>
