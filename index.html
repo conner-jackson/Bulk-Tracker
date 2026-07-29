@@ -61,6 +61,17 @@ h2{font-size:13px;margin:0;text-transform:uppercase;letter-spacing:.06em;color:v
 .pace .ph{font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-size:10.5px;margin-bottom:5px}
 .pace b{color:var(--ink)}
 .pace .ok{color:#5bd07f;font-weight:700}.pace .bad{color:#ffb060;font-weight:700}
+.pace .plegend{float:right;font-weight:600;color:var(--muted);letter-spacing:0;text-transform:none;font-size:10px}
+.pbar{margin:11px 0 4px}
+.ptop{display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:6px}
+.ptop .pnm{font-weight:700;color:var(--ink)}
+.ptop .ptt{font-variant-numeric:tabular-nums;color:var(--ink);font-weight:700}
+.ptop .pmut{color:var(--muted);font-weight:500}
+.ptrack{position:relative;height:12px;border-radius:7px;background:#22242c}
+.pfill{position:absolute;left:0;top:0;height:100%;border-radius:7px;transition:width .4s ease}
+.ptick{position:absolute;top:-2px;height:16px;width:2px;background:rgba(255,255,255,.28);border-radius:2px}
+.pnow{position:absolute;top:-4px;height:20px;width:2px;background:#fff;border-radius:2px;box-shadow:0 0 3px rgba(0,0,0,.6)}
+.pstat{font-size:12.5px;margin-top:9px}
 input,select,button{font-family:inherit;font-size:14px}
 input[type=text],input[type=number],input[type=date],input[type=time],select{width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:9px;background:#1c1d22;color:var(--ink)}
 input:focus,select:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 3px rgba(43,182,168,.18)}
@@ -356,20 +367,29 @@ function expectedFrac(){
   }
   return{cal:1,pro:1};
 }
+function paceBar(label,unit,val,goal,curFrac,checks,color){
+  const fill=Math.min(val/goal*100,100), nowp=Math.min(curFrac*100,100);
+  const eNow=Math.round(goal*curFrac);
+  const ticks=checks.map(c=>`<span class="ptick" style="left:${(c*100).toFixed(1)}%"></span>`).join('');
+  return `<div class="pbar"><div class="ptop"><span class="pnm">${label}</span>
+    <span class="ptt">${Math.round(val)}${unit} <span class="pmut">/ ${eNow}${unit} by now &middot; ${goal}${unit} day</span></span></div>
+    <div class="ptrack"><div class="pfill" style="width:${fill}%;background:${color}"></div>${ticks}
+      <span class="pnow" style="left:${nowp}%"></span></div></div>`;
+}
 function renderPace(){
   const el=document.getElementById('pace');
   if(curDay!==todayStr()){el.style.display='none';return;}
   el.style.display='';
   const t=targets(), s=sumDay(), f=expectedFrac();
-  const eCal=Math.round(t.cal*f.cal), ePro=Math.round(t.pro*f.pro);
-  const dCal=Math.round(s.cal-eCal), dPro=Math.round(s.pro-ePro);
+  const dCal=Math.round(s.cal-t.cal*f.cal), dPro=Math.round(s.pro-t.pro*f.pro);
   const now=new Date().toLocaleTimeString([], {hour:'numeric',minute:'2-digit'});
   const cCls=dCal>=-60?'ok':'bad', pCls=dPro>=-8?'ok':'bad';
   const cTxt=dCal>=0?`${dCal} ahead`:`${Math.abs(dCal)} behind`;
   const pTxt=dPro>=0?`${dPro}g ahead`:`${Math.abs(dPro)}g behind`;
-  el.innerHTML=`<div class="ph">On-pace target &middot; ${now}</div>
-    By now aim for <b>${eCal} cal</b> &amp; <b>${ePro}g protein</b>.
-    You're <span class="${cCls}">${cTxt}</span> on calories, <span class="${pCls}">${pTxt}</span> on protein.`;
+  el.innerHTML=`<div class="ph">On-pace &middot; ${now} <span class="plegend">&#9612; meals &nbsp; &#9474; now</span></div>`+
+    paceBar('Calories','',s.cal,t.cal,f.cal,[.25,.55,.85],'var(--gold)')+
+    paceBar('Protein','g',s.pro,t.pro,f.pro,[.25,.50,.75],'var(--teal)')+
+    `<div class="pstat">You're <span class="${cCls}">${cTxt}</span> on calories, <span class="${pCls}">${pTxt}</span> on protein.</div>`;
 }
 
 // ---- water ----
