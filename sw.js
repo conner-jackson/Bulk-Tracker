@@ -1,5 +1,5 @@
 // Bump CACHE version whenever the app files change to force an update.
-const CACHE = 'macroflow-v6';
+const CACHE = 'macroflow-v9';
 const ASSETS = [
   './',
   './index.html',
@@ -23,9 +23,10 @@ self.addEventListener('activate', e => {
   );
 });
 
+// Network-first for the HTML so edits show up on reload; cache fallback for offline.
 self.addEventListener('fetch', e => {
   const req = e.request;
-  if (req.mode === 'navigate' || req.destination === 'document') {
+  if (req.mode === 'navigate' || (req.destination === 'document')) {
     e.respondWith(
       fetch(req).then(res => {
         caches.open(CACHE).then(c => c.put(req, res.clone()));
