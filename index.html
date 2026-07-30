@@ -109,6 +109,14 @@ button{cursor:pointer;border:none;border-radius:9px;padding:9px 15px;font-weight
 .meal .add{font-size:12px;padding:5px 11px}
 .meal .del{position:absolute;top:8px;right:10px;color:var(--muted);cursor:pointer;font-size:17px;line-height:1}
 .meal .del:hover{color:var(--coral)}
+.genbtns{display:flex;gap:8px;flex-wrap:wrap}
+.gencard{border:1px solid var(--line);border-radius:11px;padding:13px;background:#12141a}
+.gencard .gh{font-weight:700;font-size:13px;margin-bottom:6px;color:var(--ink)}
+.genslot{font-weight:700;color:var(--gold);text-transform:uppercase;font-size:10.5px;letter-spacing:.05em;margin:11px 0 2px}
+.genrow{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px solid var(--line);font-size:13.5px}
+.genrow .gm{color:var(--muted);font-size:12px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.gentot{display:flex;justify-content:space-between;font-weight:700;margin-top:10px;font-size:13.5px;color:var(--ink)}
+.genact{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
 .tag{display:inline-block;font-size:10px;padding:2px 7px;border-radius:20px;font-weight:700;margin-right:5px;text-transform:uppercase;letter-spacing:.03em}
 .tag.easy{background:#12251a;color:#5bd07f}.tag.mid{background:#2a2113;color:#f0b74a}.tag.hi{background:#2a1512;color:#ff8f79}.tag.mine{background:#2a2113;color:#f5a623}
 .small-muted{font-size:12px;color:var(--muted)}
@@ -204,9 +212,18 @@ button{cursor:pointer;border:none;border-radius:9px;padding:9px 15px;font-weight
   </div>
 
   <div class="card">
-    <h2 style="margin-bottom:12px">Food &amp; meal ideas</h2>
-    <div class="tabs" id="mealTabs"></div>
-    <div class="mealgrid" id="mealGrid"></div>
+    <div class="cardhead"><h2>Meal generator</h2></div>
+    <div class="small-muted" style="margin-bottom:11px">Auto-sized to your remaining targets and the time of day.</div>
+    <div class="genbtns">
+      <button class="btn" onclick="genNow()">Suggest for now</button>
+      <button class="btn sec" onclick="genDay()">Plan my whole day</button>
+    </div>
+    <div id="genOut" style="margin-top:12px"></div>
+  </div>
+
+  <div class="card">
+    <div class="cardhead"><h2>My foods</h2></div>
+    <div class="mealgrid" id="myFoodsList"></div>
   </div>
 
   <div class="card">
@@ -401,7 +418,7 @@ function renderWater(){
   document.getElementById('waterWrap').innerHTML=
     `<div class="wtop"><span class="wbig">${v}</span><span class="wu">oz</span><span class="wgoal">/ ${g} oz${done?' &check;':''}</span></div>
      <div class="wtrack"><div class="wfill" style="width:${pct}%"></div></div>
-     <div class="qrow">${[8,12,16,24].map(o=>`<button class="qbtn" onclick="addWater(${o})">+${o}</button>`).join('')}
+     <div class="qrow">${[8,12,16,24,40].map(o=>`<button class="qbtn" onclick="addWater(${o})">+${o}</button>`).join('')}
        <button class="qbtn sub" onclick="addWater(-8)">&minus;8</button></div>`;
 }
 
@@ -447,26 +464,83 @@ function renderProf(){
      <div class="col"><span class="pill carb">${t.carbG}g carbs</span></div></div>
      <div class="small-muted" style="margin-top:9px">${prof.w} lb &rarr; goal ${prof.g} lb &middot; maintenance ~${t.tdee} cal &middot; ${(+prof.surp)>0?'+':''}${prof.surp} surplus &middot; protein ${prof.proR}&times;bw &middot; water ${prof.waterGoal}oz</div>`;
 }
-function renderMeals(cat){
-  const list0=['All','My foods',...CATS];
-  const tabs=document.getElementById('mealTabs');
-  tabs.innerHTML=list0.map(c=>`<button class="${(cat||'All')===c?'on':''}" onclick="renderMeals('${c.replace(/'/g,"")}')">${c}${c==='My foods'?` (${myfoods.length})`:''}</button>`).join('');
-  const grid=document.getElementById('mealGrid');
-  if(cat==='My foods'){
-    if(!myfoods.length){grid.innerHTML='<div class="small-muted">No saved foods yet. Add a custom food and tick &ldquo;Save to My Foods.&rdquo;</div>';return;}
-    grid.innerHTML=myfoods.map((m,idx)=>`<div class="meal"><span class="del" onclick="delMyFood(${idx})">&times;</span>
-      <div class="t">${m.n}</div>
-      <div class="m">${m.cal} cal &middot; ${m.pro}g protein${m.fib?` &middot; ${m.fib}g fiber`:''}</div>
-      <div><span class="tag mine">saved</span><button class="btn add" onclick='quickAdd(${JSON.stringify(m).replace(/'/g,"&#39;")})'>+ Log</button></div></div>`).join('');
-    return;
+const MEALS=LIB.filter(x=>x.cat==='Quick meals');
+const SNACKS=LIB.filter(x=>x.cat!=='Quick meals');
+let lastGen=[];
+function renderMyFoods(){
+  const grid=document.getElementById('myFoodsList');
+  if(!myfoods.length){grid.innerHTML='<div class="small-muted">No saved foods yet. Add a custom food above and tick &ldquo;Save to My Foods.&rdquo;</div>';return;}
+  grid.innerHTML=myfoods.map((m,idx)=>`<div class="meal"><span class="del" onclick="delMyFood(${idx})">&times;</span>
+    <div class="t">${m.n}</div>
+    <div class="m">${m.cal} cal &middot; ${m.pro}g protein${m.fib?` &middot; ${m.fib}g fiber`:''}</div>
+    <div><span class="tag mine">saved</span><button class="btn add" onclick='quickAdd(${JSON.stringify(m).replace(/'/g,"&#39;")})'>+ Log</button></div></div>`).join('');
+}
+function nextCheckpointGap(){
+  const t=targets(), s=sumDay(), cps=paceCheckpoints();
+  const now=new Date(), cur=now.getHours()*60+now.getMinutes();
+  let nc=cps[cps.length-1];
+  for(const c of cps){ if(c.m>cur){ nc=c; break; } }
+  return {gapCal:Math.max(0,Math.round(t.cal*nc.cal-s.cal)), gapPro:Math.max(0,Math.round(t.pro*nc.pro-s.pro))};
+}
+function pickForGap(gapCal,gapPro){
+  let picks=[],cal=0,pro=0;
+  if(gapCal>=380){
+    const m=MEALS.slice().sort((a,b)=>Math.abs(a.cal-gapCal)-Math.abs(b.cal-gapCal))[0];
+    if(m){picks.push(m);cal+=m.cal;pro+=m.pro;}
   }
-  const list=(!cat||cat==='All')?LIB:LIB.filter(x=>x.cat===cat);
-  grid.innerHTML=list.map(m=>{
-    const ef=m.effort==='easy'?'<span class="tag easy">easy</span>':m.effort==='mid'?'<span class="tag mid">quick cook</span>':'<span class="tag hi">effort</span>';
-    return `<div class="meal"><div class="t">${m.n}</div>
-      <div class="m">${m.cal} cal &middot; ${m.pro}g protein${m.fib?` &middot; ${m.fib}g fiber`:''}${m.note?` &middot; ${m.note}`:''}</div>
-      <div>${ef}<button class="btn add" onclick='quickAdd(${JSON.stringify(m).replace(/'/g,"&#39;")})'>+ Log</button></div></div>`;
-  }).join('');
+  const byPro=SNACKS.slice().sort((a,b)=>b.pro-a.pro); let guard=0;
+  while((cal<gapCal*0.8||pro<gapPro*0.85)&&guard++<4){
+    let best=null,bs=-1;
+    for(const it of byPro){ if(cal+it.cal>Math.max(gapCal*1.2,220))continue;
+      const v=(pro<gapPro?it.pro:0)+it.cal*0.02; if(v>bs){bs=v;best=it;} }
+    if(!best)break; picks.push(best); cal+=best.cal; pro+=best.pro;
+  }
+  if(!picks.length&&SNACKS.length)picks.push(SNACKS.slice().sort((a,b)=>b.pro-a.pro)[0]);
+  return picks;
+}
+function genNow(){
+  if(curDay!==todayStr()){document.getElementById('genOut').innerHTML='<div class="gencard"><div class="gh">Switch to today</div><div class="small-muted">&ldquo;Suggest for now&rdquo; works on today’s pace.</div></div>';return;}
+  const g=nextCheckpointGap();
+  if(g.gapCal<=30&&g.gapPro<=5){document.getElementById('genOut').innerHTML='<div class="gencard"><div class="gh">You’re on pace &#9989;</div><div class="small-muted">Nothing needed right now to stay on track. Check back before your next meal.</div></div>';lastGen=[];return;}
+  renderGen(`To stay on pace, aim for about <b>${g.gapCal} cal</b> &amp; <b>${g.gapPro}g protein</b> next`,[{slot:'Suggested now',items:pickForGap(g.gapCal,g.gapPro)}],false);
+}
+function genDay(){
+  const t=targets(), slots=[['Breakfast',.25],['Lunch',.30],['Dinner',.30]], plan=[]; let tc=0,tp=0;
+  for(const sl of slots){
+    const tgt=t.cal*sl[1], cand=MEALS.filter(m=>Math.abs(m.cal-tgt)<260), pool=cand.length?cand:MEALS;
+    const m=pool[Math.floor(Math.random()*pool.length)];
+    plan.push({slot:sl[0],items:[m]}); tc+=m.cal; tp+=m.pro;
+  }
+  let sn=[],guard=0;
+  while(tc<t.cal*0.95&&guard++<7){
+    const needPro=tp<t.pro; let best=null,bs=-1;
+    for(const it of SNACKS){ if(tc+it.cal>t.cal*1.05)continue; const v=needPro?(it.pro+it.cal*0.01):it.cal; if(v>bs){bs=v;best=it;} }
+    if(!best)break; sn.push(best); tc+=best.cal; tp+=best.pro;
+  }
+  if(sn.length)plan.push({slot:'Snacks',items:sn});
+  renderGen(`Full-day plan &middot; targets ${t.cal} cal / ${t.pro}g protein`,plan,true);
+}
+function renderGen(title,plan,isDay){
+  lastGen=[].concat.apply([],plan.map(p=>p.items));
+  let body='';
+  for(const p of plan){
+    body+=`<div class="genslot">${p.slot}</div>`+
+      p.items.map(m=>`<div class="genrow"><span>${m.n}</span><span class="gm">${m.cal} cal &middot; ${m.pro}g P</span></div>`).join('');
+  }
+  const tc=lastGen.reduce((a,i)=>a+i.cal,0), tp=lastGen.reduce((a,i)=>a+i.pro,0);
+  document.getElementById('genOut').innerHTML=
+    `<div class="gencard"><div class="gh">${title}</div>${body}
+      <div class="gentot"><span>Total</span><span>${Math.round(tc)} cal &middot; ${Math.round(tp)}g P</span></div>
+      <div class="genact"><button class="btn" onclick="logGen()">+ Log all to today</button>
+        <button class="btn sec" onclick="${isDay?'genDay':'genNow'}()">Regenerate</button></div></div>`;
+}
+function logGen(){
+  if(!lastGen.length)return;
+  if(!logs[curDay])logs[curDay]=[];
+  lastGen.forEach(m=>logs[curDay].push({n:m.n,q:1,cal:m.cal,pro:m.pro,fib:m.fib||0}));
+  save(K.log,logs);
+  document.getElementById('genOut').innerHTML='<div class="gencard"><div class="gh">Logged &#9989;</div><div class="small-muted">Added to today&rsquo;s diary.</div></div>';
+  lastGen=[]; renderToday();
 }
 let wc;
 function renderWeight(){
@@ -530,9 +604,9 @@ function delItem(i){logs[curDay].splice(i,1);save(K.log,logs);renderToday();}
 function addMyFood(item){
   if(myfoods.some(f=>f.n.toLowerCase()===item.n.toLowerCase()))return;
   myfoods.push({n:item.n,cal:item.cal,pro:item.pro,fib:item.fib||0});
-  save(K.myfoods,myfoods);
+  save(K.myfoods,myfoods);renderMyFoods();
 }
-function delMyFood(i){myfoods.splice(i,1);save(K.myfoods,myfoods);renderMeals('My foods');}
+function delMyFood(i){myfoods.splice(i,1);save(K.myfoods,myfoods);renderMyFoods();}
 function logWeight(){
   const v=+document.getElementById('wIn').value;if(!v){return;}
   weights=weights.filter(x=>x.d!==curDay);weights.push({d:curDay,lb:v});
@@ -555,7 +629,7 @@ function saveProf(){
 document.addEventListener('click',e=>{if(!e.target.closest('.suggest'))document.getElementById('ddList').style.display='none';});
 
 document.getElementById('dayPick').value=curDay;
-renderProf();renderToday();renderWater();renderMeals('All');renderWeight();
+renderProf();renderToday();renderWater();renderMyFoods();renderWeight();
 
 if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(()=>{});});}
 </script>
