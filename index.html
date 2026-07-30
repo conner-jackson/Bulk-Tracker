@@ -280,7 +280,8 @@ const LS=window.localStorage;
 const K={prof:'ft_prof',log:'ft_log',w:'ft_w',water:'ft_water',myfoods:'ft_myfoods'};
 const load=(k,d)=>{try{return JSON.parse(LS.getItem(k))??d}catch(e){return d}};
 const save=(k,v)=>LS.setItem(k,JSON.stringify(v));
-const todayStr=()=>new Date().toISOString().slice(0,10);
+const fmtDate=(d)=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const todayStr=()=>fmtDate(new Date());
 let curDay=todayStr();
 
 const PROF_DEFAULTS={w:188,g:200,h:74.75,age:22,act:1.55,surp:350,proR:0.9,
@@ -613,7 +614,7 @@ function logWeight(){
   save(K.w,weights);document.getElementById('wIn').value='';
   prof.w=v;save(K.prof,prof);renderProf();renderWeight();renderToday();
 }
-function shiftDay(n){const d=new Date(curDay);d.setDate(d.getDate()+n);curDay=d.toISOString().slice(0,10);
+function shiftDay(n){const p=curDay.split('-').map(Number);const d=new Date(p[0],p[1]-1,p[2]);d.setDate(d.getDate()+n);curDay=fmtDate(d);
   document.getElementById('dayPick').value=curDay;renderToday();renderWater();}
 function pickDay(v){curDay=v;renderToday();renderWater();}
 function toggleProf(){const f=document.getElementById('profForm');
