@@ -135,7 +135,17 @@ button{cursor:pointer;border:none;border-radius:9px;padding:9px 15px;font-weight
 .wbig{font-size:28px;font-weight:800;font-variant-numeric:tabular-nums}
 .wu{font-size:13px;color:var(--muted);font-weight:600}
 .wgoal{color:var(--muted);font-size:13px;font-variant-numeric:tabular-nums}
-.wtrack{height:15px;border-radius:8px;background:#0f1c26;overflow:hidden;border:1px solid #1c2a36}
+.wtrack{position:relative;height:15px;border-radius:8px;background:#0f1c26;overflow:hidden;border:1px solid #1c2a36}
+.wnow{position:absolute;top:0;bottom:0;width:2px;background:#fff;box-shadow:0 0 3px rgba(0,0,0,.7)}
+.wstat{font-size:12.5px;margin-top:9px;color:var(--muted)}
+.wstat b{color:var(--ink)}
+.wstat .ok{color:#5bd07f;font-weight:700}.wstat .bad{color:#ffb060;font-weight:700}
+.mfhead{display:flex;align-items:center;gap:7px;margin-bottom:2px}
+.fav{cursor:pointer;color:#565863;font-size:17px;line-height:1;flex:0 0 auto}
+.fav.on{color:var(--gold)}
+.mfactions{display:flex;align-items:center;gap:8px;margin-top:9px}
+.del2{color:var(--muted);cursor:pointer;font-size:12.5px;font-weight:600;margin-left:auto}
+.del2:hover{color:var(--coral)}
 .wfill{height:100%;background:linear-gradient(90deg,#2bb6f0,#2f7cf6);border-radius:8px;transition:width .35s}
 .qrow{display:flex;gap:7px;flex-wrap:wrap;margin-top:11px}
 .qbtn{background:#0f2530;color:#5fd0e6;border:1px solid #1e3a46;padding:8px 13px;border-radius:9px;font-weight:700;font-size:13.5px}
@@ -414,11 +424,21 @@ function renderPace(){
 function todayWater(){return water[curDay]||0}
 function addWater(oz){water[curDay]=Math.max(0,Math.round((water[curDay]||0)+oz));save(K.water,water);renderWater();}
 function renderWater(){
-  const g=+prof.waterGoal||130, v=todayWater(), pct=Math.min(v/g*100,100);
-  const done=v>=g;
+  const g=+prof.waterGoal||130, v=todayWater(), pct=Math.min(v/g*100,100), done=v>=g;
+  let marker='', status='';
+  if(curDay===todayStr()){
+    const now=new Date(), cur=now.getHours()*60+now.getMinutes();
+    const start=420, end=toMin(prof.bed);
+    const wf=Math.max(0,Math.min(1,(cur-start)/((end-start)||1)));
+    const eOz=Math.round(g*wf), dOz=v-eOz, nowp=Math.min(wf*100,100);
+    marker=`<span class="wnow" style="left:${nowp}%"></span>`;
+    const cls=dOz>=-8?'ok':'bad', txt=dOz>=0?`${dOz} oz ahead`:`${Math.abs(dOz)} oz behind`;
+    status=`<div class="wstat">By now aim for <b>${eOz} oz</b> &middot; you're <span class="${cls}">${txt}</span></div>`;
+  }
   document.getElementById('waterWrap').innerHTML=
     `<div class="wtop"><span class="wbig">${v}</span><span class="wu">oz</span><span class="wgoal">/ ${g} oz${done?' &check;':''}</span></div>
-     <div class="wtrack"><div class="wfill" style="width:${pct}%"></div></div>
+     <div class="wtrack"><div class="wfill" style="width:${pct}%"></div>${marker}</div>
+     ${status}
      <div class="qrow">${[8,12,16,24,40].map(o=>`<button class="qbtn" onclick="addWater(${o})">+${o}</button>`).join('')}
        <button class="qbtn sub" onclick="addWater(-8)">&minus;8</button></div>`;
 }
@@ -468,14 +488,40 @@ function renderProf(){
 const MEALS=LIB.filter(x=>x.cat==='Quick meals');
 const SNACKS=LIB.filter(x=>x.cat!=='Quick meals');
 let lastGen=[];
+let editingFood=-1;
 function renderMyFoods(){
   const grid=document.getElementById('myFoodsList');
   if(!myfoods.length){grid.innerHTML='<div class="small-muted">No saved foods yet. Add a custom food above and tick &ldquo;Save to My Foods.&rdquo;</div>';return;}
-  grid.innerHTML=myfoods.map((m,idx)=>`<div class="meal"><span class="del" onclick="delMyFood(${idx})">&times;</span>
-    <div class="t">${m.n}</div>
-    <div class="m">${m.cal} cal &middot; ${m.pro}g protein${m.fib?` &middot; ${m.fib}g fiber`:''}</div>
-    <div><span class="tag mine">saved</span><button class="btn add" onclick='quickAdd(${JSON.stringify(m).replace(/'/g,"&#39;")})'>+ Log</button></div></div>`).join('');
+  const order=myfoods.map((m,idx)=>({m,idx})).sort((a,b)=>(b.m.fav?1:0)-(a.m.fav?1:0));
+  grid.innerHTML=order.map(({m,idx})=>{
+    if(idx===editingFood){
+      return `<div class="meal">
+        <div class="field"><label>Name</label><input type="text" id="efN" value="${(m.n||'').replace(/"/g,'&quot;')}"></div>
+        <div class="grid3">
+          <div class="field"><label>Cal</label><input type="number" id="efC" value="${m.cal}"></div>
+          <div class="field"><label>Protein</label><input type="number" id="efP" value="${m.pro}"></div>
+          <div class="field"><label>Fiber</label><input type="number" id="efF" value="${m.fib||0}"></div></div>
+        <div class="mfactions"><button class="btn" onclick="saveEditFood(${idx})">Save</button>
+          <button class="btn sec sm" onclick="cancelEditFood()">Cancel</button></div></div>`;
+    }
+    return `<div class="meal">
+      <div class="mfhead"><span class="fav ${m.fav?'on':''}" onclick="toggleFav(${idx})">${m.fav?'&#9733;':'&#9734;'}</span><span class="t">${m.n}</span></div>
+      <div class="m">${m.cal} cal &middot; ${m.pro}g protein${m.fib?` &middot; ${m.fib}g fiber`:''}</div>
+      <div class="mfactions"><button class="btn add" onclick='quickAdd(${JSON.stringify(m).replace(/'/g,"&#39;")})'>+ Log</button>
+        <button class="btn sec sm" onclick="editMyFood(${idx})">Edit</button>
+        <span class="del2" onclick="delMyFood(${idx})">Delete</span></div></div>`;
+  }).join('');
 }
+function editMyFood(i){editingFood=i;renderMyFoods();}
+function cancelEditFood(){editingFood=-1;renderMyFoods();}
+function saveEditFood(i){
+  const n=document.getElementById('efN').value.trim();
+  const cal=+document.getElementById('efC').value||0, pro=+document.getElementById('efP').value||0, fib=+document.getElementById('efF').value||0;
+  if(!n){alert('Name cannot be empty');return;}
+  myfoods[i]=Object.assign({},myfoods[i],{n:n,cal:cal,pro:pro,fib:fib});
+  save(K.myfoods,myfoods); editingFood=-1; renderMyFoods();
+}
+function toggleFav(i){myfoods[i].fav=!myfoods[i].fav;save(K.myfoods,myfoods);renderMyFoods();}
 function nextCheckpointGap(){
   const t=targets(), s=sumDay(), cps=paceCheckpoints();
   const now=new Date(), cur=now.getHours()*60+now.getMinutes();
@@ -565,7 +611,7 @@ function renderWeight(){
 }
 
 let searchMatch=null;
-function foodPool(){return myfoods.map(x=>Object.assign({},x,{mine:true})).concat(LIB);}
+function foodPool(){return myfoods.slice().sort((a,b)=>(b.fav?1:0)-(a.fav?1:0)).map(x=>Object.assign({},x,{mine:true})).concat(LIB);}
 function onSearch(q){
   const dd=document.getElementById('ddList'); q=q.trim().toLowerCase();
   document.getElementById('customRow').style.display='none';
